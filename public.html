@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://unpkg.com/prettier@2.3.2/standalone.js"></script>
+    <script src="https://unpkg.com/browse/prettier-sql@5.1.1/lib/sqlFormatter.js"></script>    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tools</title>
+    <!--<link rel="stylesheet" href="styles.css">-->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f8;
+            color: #333;
+        }
+        #tabs, .sub-tabs {
+            overflow: hidden;
+            background-color: #f1f1f1;
+        }
+        #tabs .tab, .sub-tabs .tab {
+            float: left;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: background-color 0.3s;
+            border: none;
+            outline: none;
+            background-color: inherit;
+            font-size: 16px;
+        }
+        #tabs .tab:hover, .sub-tabs .tab:hover {
+            background-color: #ddd;
+        }
+        #tabs .tab.active, .sub-tabs .tab.active {
+            background-color: #ccc;
+            border-bottom: none;
+        }
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            display: none;
+            background: white;
+            margin-top: -1px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea, table, pre {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        textarea {
+            margin-top: 10px;
+            height: 150px;
+            resize: vertical;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="text"], .output-box {
+            padding: 8px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: block;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        pre {
+            background-color: #f4f4f8;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .copy-feedback {
+            background-color: #32CD32; /* Lime Green for visibility */
+            color: #ffffff;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #game {
+            text-align: center;
+            margin-top: 20px;
+        }
+        #ball {
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.5s;
+        }
+        #message {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .animated-text {
+            font-size: 32px;
+            animation: grow-shrink 1s infinite alternate;
+            color: red; /* Change to any color you prefer */
+        }
+        @keyframes grow-shrink {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.5);
+            }
+        }
+        #feedback {
+            margin-top: 20px;
+        }
+        #personalQueries textarea {
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="tabs">
+    <div class="tab" data-tab="tab1">Tab-Delimited Data Formatter</div>
+    <div class="tab" data-tab="tab2">Line Break to Comma Converter</div>
+    <div class="tab" data-tab="tab3">Remove Character from Text</div>
+    <!--<div class="tab" data-tab="tab4">SQL Query Library</div>-->
+    <div class="tab" data-tab="tab5">Game</div>
+    <!--<div class="tab" data-tab="tab6">SQL Formatter</div>-->
+    <div class="tab" data-tab="tab7">Text Splitter (4000 chars)</div>
+    <!--<div class="tab" data-tab="tab8">Feedback</div>-->
+</div>
+
+<div id="tab1" class="tab-content">
+    <h1>Tab-Delimited Data Formatter</h1>
+    <textarea id="dataInput" placeholder="Paste your tab-delimited data here..."></textarea>
+    <button onclick="generateTables()">Generate Tables</button>
+    <table id="dataTable"></table>
+    <button onclick="copyToClipboard('dataTable')">Copy Table</button>
+</div>
+
+<div id="tab2" class="tab-content">
+    <h1>Line Break to Comma Converter</h1>
+    <textarea id="lineBreakInput" placeholder="Enter text with line breaks..."></textarea>
+    <button onclick="convertLineBreaks()">Convert Line Breaks</button>
+    <button onclick="toggleApostrophes()">Toggle Apostrophes</button>
+    <button onclick="toggleParentheses()">Toggle Parentheses</button>
+    <pre id="convertedText"></pre>
+    <button onclick="copyToClipboard('convertedText', true)">Copy Converted Text</button>
+</div>
+
+<div id="tab3" class="tab-content">
+    <h1>Remove Character from Text</h1>
+    <p>You may receive an error saying: "Error. You cannot have an email in the message body!" You can input @ to remove that from the blob of text.</p>
+    <textarea id="removeTextInput" placeholder="Enter text from which to remove characters..."></textarea>
+    <input type="text" id="charToRemove" placeholder="Enter character to remove">
+    <button onclick="removeCharacter()">Remove Character</button>
+    <button onclick="removeEmails()">Remove Emails</button>
+    <textarea class="output-box" id="removedTextOutput" readonly></textarea>
+    <button onclick="copyToClipboard('removedTextOutput', true)">Copy Output</button>
+</div>
+
+
+
+<div id="tab5" class="tab-content">
+    <h1>Game</h1>
+    <p>Click the ball as many times as you can in 30 seconds!</p>
+    <div id="game">
+        <div id="timer">30</div>
+        <img id="ball" src="https://www.pngall.com/wp-content/uploads/5/Sports-Ball-PNG.png" alt="ball">
+        <p id="message"></p>
+    </div>
+</div>
+
+<div id="tab6" class="tab-content">
+    <h1>SQL Formatter</h1>
+    <textarea id="sqlInput" placeholder="Enter SQL here..."></textarea>
+    <button onclick="formatSQL()">Format SQL</button>
+    <pre id="formattedSQL" class="output-box"></pre>
+</div>
+
+<div id="tab7" class="tab-content">
+    <h1>Text Splitter</h1>
+    <textarea id="textSplitterInput" placeholder="Paste your text here..."></textarea>
+    <button onclick="splitText()">Split Text</button>
+    <div id="textSplitterOutput"></div>
+</div>
+
+
+<div id="tab8" class="tab-content">
+    <h1>Feedback</h1>
+    <textarea id="feedbackInput" placeholder="Enter your feedback here..."></textarea>
+    <button onclick="submitFeedback()">Submit</button>
+    <p id="feedbackResponse"></p>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const tabLinks = document.querySelectorAll('#tabs .tab');
+        const subTabLinks = document.querySelectorAll('.sub-tabs .tab');
+        let clicks = 0;
+        let gameInterval;
+        let timerInterval;
+
+        // Event delegation for main tabs
+        tabLinks.forEach(tab => {
+            tab.addEventListener('click', event => {
+                openTab(event, event.currentTarget.dataset.tab);
+            });
+        });
+
+        // Event delegation for sub-tabs
+        subTabLinks.forEach(tab => {
+            tab.addEventListener('click', event => {
+                openSubTab(event, event.currentTarget.dataset.tab);
+            });
+        });
+
+        // Automatically open the first tab and sub-tab
+        if (tabLinks.length > 0) {
+            tabLinks[0].click();
+        }
+        if (subTabLinks.length > 0) {
+            subTabLinks[0].click();
+        }
+
+        // Set up the game
+        const ball = document.getElementById('ball');
+        ball.addEventListener('click', () => {
+            if (!gameInterval) {
+                startGame();
+            }
+            clicks++;
+            moveBall();
+        });
+
+        function startGame() {
+            clicks = 0;
+            let timeLeft = 30;
+            document.getElementById('timer').textContent = timeLeft;
+            document.getElementById('message').textContent = '';
+            gameInterval = setTimeout(endGame, 30000);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const message = document.getElementById('message');
+            message.innerHTML = `You clicked ${clicks} times! <br><br><span class="animated-text">Get back to work!</span>`;
+            message.style.fontSize = '24px';
+            message.style.fontWeight = 'bold';
+            gameInterval = null;
+        }
+
+        function moveBall() {
+            const angle = Math.random() * 180;
+            const distance = 100; // distance in pixels
+            const x = Math.cos(angle * (Math.PI / 180)) * distance;
+            const y = Math.sin(angle * (Math.PI / 180)) * distance;
+            ball.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        // Load personal queries from local storage
+        loadPersonalQueries();
+    });
+
+    // Function to open main tabs
+    function openTab(evt, tabName) {
+        const tabcontent = document.querySelectorAll(".tab-content");
+        tabcontent.forEach(content => {
+            content.style.display = "none"; // Hide all tab contents
+        });
+
+        const tablinks = document.querySelectorAll("#tabs .tab");
+        tablinks.forEach(link => {
+            link.classList.remove("active"); // Remove active class from all tabs
+        });
+
+        document.getElementById(tabName).style.display = "block"; // Show the clicked tab content
+        evt.currentTarget.classList.add("active"); // Add active class to clicked tab
+    }
+
+    // Function to open sub-tabs inside the SQL Query Library
+    function openSubTab(evt, subTabName) {
+        const subTabContent = document.querySelectorAll("#tab4 .tab-content");
+        subTabContent.forEach(content => {
+            content.style.display = "none"; // Hide all sub-tab contents
+        });
+
+        const subTabLinks = document.querySelectorAll("#tab4 .sub-tabs .tab");
+        subTabLinks.forEach(link => {
+            link.classList.remove("active"); // Remove active class from all sub-tabs
+        });
+
+        document.getElementById(subTabName).style.display = "block"; // Show the clicked sub-tab content
+        evt.currentTarget.classList.add("active"); // Add active class to clicked sub-tab
+    }
+
+    function generateTables() {
+        const data = document.getElementById('dataInput').value.trim();
+        const rows = data.split('\n');
+        let htmlTable = '<tr>';
+        const headers = rows[0].split('\t');
+        headers.forEach(header => {
+            htmlTable += `<th>${header.trim()}</th>`;
+        });
+        htmlTable += '</tr>';
+        rows.slice(1).forEach(row => {
+            const cells = row.split('\t');
+            htmlTable += '<tr>';
+            cells.forEach(cell => {
+                htmlTable += `<td>${cell.trim()}</td>`;
+            });
+            htmlTable += '</tr>';
+        });
+        document.getElementById('dataTable').innerHTML = htmlTable;
+    }
+
+    function convertLineBreaks() {
+        const text = document.getElementById('lineBreakInput').value;
+        const converted = text.replace(/\n/g, ', ');
+        document.getElementById('convertedText').textContent = converted;
+        apostrophesAdded = false;  // Reset the toggle state
+        parenthesesAdded = false; // Reset the toggle state
+    }
+
+    function toggleApostrophes() {
+        let currentText = document.getElementById('convertedText').textContent;
+        if (!apostrophesAdded) {
+            currentText = "'" + currentText.split(', ').join("', '") + "'";
+            apostrophesAdded = true;
+        } else {
+            currentText = currentText.slice(1, -1).replace(/', '/g, ', ');
+            apostrophesAdded = false;
+        }
+        document.getElementById('convertedText').textContent = currentText;
+    }
+
+    function toggleParentheses() {
+        let currentText = document.getElementById('convertedText').textContent;
+        if (!parenthesesAdded) {
+            currentText = "(" + currentText + ")";
+            parenthesesAdded = true;
+        } else {
+            currentText = currentText.slice(1, -1);
+            parenthesesAdded = false;
+        }
+        document.getElementById('convertedText').textContent = currentText;
+    }
+
+    function removeCharacter() {
+        const text = document.getElementById('removeTextInput').value;
+        const charToRemove = document.getElementById('charToRemove').value;
+        const removedText = text.split(charToRemove).join('');
+        document.getElementById('removedTextOutput').value = removedText; // Use value for textarea
+    }
+
+    function removeEmails() {
+        const text = document.getElementById('removeTextInput').value;
+        const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+        const removedText = text.replace(emailRegex, '');
+        document.getElementById('removedTextOutput').value = removedText.trim(); // Use value for textarea and trim any leading/trailing spaces
+    }
+
+    function copyToClipboard(elementId, isPre = false) {
+        const element = document.getElementById(elementId);
+        const textToCopy = isPre ? element.textContent : element.value; // Use value for textarea
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const button = document.querySelector(`[onclick="copyToClipboard('${elementId}', ${isPre})"]`);
+            const originalText = button.textContent;
+            button.textContent = "Copied!";
+            button.style.backgroundColor = "#32CD32";
+            button.style.color = "#ffffff";
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.backgroundColor = "#4CAF50";
+                button.style.color = "white";
+            }, 2000);
+        });
+    }
+
+    function filterQueries() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const queries = document.querySelectorAll('.query');
+        queries.forEach(query => {
+            const queryText = query.textContent.toLowerCase();
+            if (queryText.includes(searchInput)) {
+                query.style.display = 'block';
+            } else {
+                query.style.display = 'none';
+            }
+        });
+    }
+
+    function submitFeedback() {
+        const feedback = document.getElementById('feedbackInput').value;
+        document.getElementById('feedbackResponse').innerText = "lol didn't ask m8";
+    }
+
+    function addPersonalQuery() {
+        const query = document.getElementById('personalQueryInput').value.trim();
+        if (query) {
+            const personalQueries = localStorage.getItem('personalQueries') ? JSON.parse(localStorage.getItem('personalQueries')) : [];
+            personalQueries.push(query);
+            localStorage.setItem('personalQueries', JSON.stringify(personQueries));
+            displayPersonalQueries();
+            document.getElementById('personalQueryInput').value = ''; // Clear the input
+        }
+    }
+
+    function editPersonalQuery(index) {
+        const queryTextArea = document.getElementById(`personalQuery${index}`);
+        queryTextArea.removeAttribute('readonly');
+        queryTextArea.focus();
+    }
+
+    function savePersonalQuery(index) {
+        const queryTextArea = document.getElementById(`personalQuery${index}`);
+        const personalQueries = JSON.parse(localStorage.getItem('personalQueries'));
+        personalQueries[index] = queryTextArea.value;
+        localStorage.setItem('personalQueries', JSON.stringify(personalQueries));
+        queryTextArea.setAttribute('readonly', 'readonly');
+    }
+
+    function deletePersonalQuery(index) {
+        const personalQueries = JSON.parse(localStorage.getItem('personalQueries'));
+        personalQueries.splice(index, 1);
+        localStorage.setItem('personalQueries', JSON.stringify(personalQueries));
+        displayPersonalQueries();
+    }
+
+    function displayPersonalQueries() {
+        const personalQueries = localStorage.getItem('personalQueries') ? JSON.parse(localStorage.getItem('personalQueries')) : [];
+        const personalQueriesDiv = document.getElementById('personalQueries');
+        personalQueriesDiv.innerHTML = '';
+        personalQueries.forEach((query, index) => {
+            const queryElement = document.createElement('div');
+            queryElement.classList.add('query');
+            queryElement.innerHTML = `
+                <textarea id="personalQuery${index}" readonly>${query}</textarea>
+                <button onclick="copyToClipboard('personalQuery${index}', false)">Copy Query</button>
+                <button onclick="editPersonalQuery(${index})">Edit</button>
+                <button onclick="savePersonalQuery(${index})">Save</button>
+                <button onclick="deletePersonalQuery(${index})">Delete</button>
+            `;
+            personalQueriesDiv.appendChild(queryElement);
+        });
+    }
+
+    function loadPersonalQueries() {
+        if (localStorage.getItem('personalQueries')) {
+            displayPersonalQueries();
+        }
+    }
+
+    function formatSQL() {
+        const sqlInput = document.getElementById('sqlInput').value;
+
+        try {
+            const formattedSQL = prettier.format(sqlInput, {
+                parser: "sql",
+                plugins: prettierPlugins, // Ensure Prettier plugins are loaded
+            });
+
+            document.getElementById('formattedSQL').innerText = formattedSQL;
+        } catch (error) {
+            console.error("Error formatting SQL: ", error);
+            document.getElementById('formattedSQL').innerText = "Invalid SQL or Formatting Error!";
+        }
+    }
+
+    function splitText() {
+        let inputText = document.getElementById('textSplitterInput').value;
+        let outputDiv = document.getElementById('textSplitterOutput');
+        let chunkSize = 4000;
+        let result = '';
+
+        outputDiv.innerHTML = '';  // Clear previous output
+
+        if (inputText.length > 0) {
+            for (let i = 0; i < inputText.length; i += chunkSize) {
+                let chunk = inputText.slice(i, i + chunkSize);
+                let blockNumber = Math.floor(i / chunkSize) + 1;
+
+                // Create the block of text
+                let blockDiv = document.createElement('div');
+                blockDiv.className = 'text-block';
+                blockDiv.setAttribute('data-text', chunk);  // Store the chunk for copy
+                blockDiv.innerHTML = `<strong>Block ${blockNumber}:</strong><br>${chunk.replace(/\n/g, '<br>')}`;
+
+                // Add click event to copy the text
+                blockDiv.addEventListener('click', function() {
+                    copyTextToClipboard(chunk);
+                    alert(`Block ${blockNumber} copied!`);
+                });
+
+                outputDiv.appendChild(blockDiv);
+            }
+        } else {
+            outputDiv.innerHTML = '<p>No text provided!</p>';
+        }
+    }
+
+    function copyTextToClipboard(text) {
+        let tempInput = document.createElement('textarea');
+        tempInput.style.position = 'absolute';
+        tempInput.style.left = '-9999px';
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+    }
+</script>
+
+<style>
+    textarea {
+        width: 100%;
+        height: 150px;
+        margin-top: 10px;
+        border-radius: 4px;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+    }
+    
+    pre {
+        background-color: #f4f4f8;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        border: 1px solid #ddd;
+        white-space: pre-wrap;
+    }
+    .text-block {
+        background-color: #f1f1f1;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .text-block:hover {
+        background-color: #e0e0e0;
+    }
+
+    .text-block strong {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.2em;
+        color: #333;
+    }
+    </style>
+    
+</body>
+</html>
